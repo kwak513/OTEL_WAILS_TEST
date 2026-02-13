@@ -253,7 +253,7 @@ func (u *UserCrud) Delete(id int) (string, error) {
 	}
 	
 	// 2. SQL 문 작성 (DELETE)
-	sql := "DELELTE FROM users WHERE id = ?"
+	sql := "DELETE FROM users WHERE id = ?"
 	
 	// 3. SQL 실행
 	res, err := db.Exec(sql, id)

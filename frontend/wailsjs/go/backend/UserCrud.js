@@ -6,6 +6,22 @@ export function Connect(arg1) {
   return window['go']['backend']['UserCrud']['Connect'](arg1);
 }
 
+export function Create(arg1, arg2, arg3) {
+  return window['go']['backend']['UserCrud']['Create'](arg1, arg2, arg3);
+}
+
+export function Delete(arg1) {
+  return window['go']['backend']['UserCrud']['Delete'](arg1);
+}
+
+export function ReadAll() {
+  return window['go']['backend']['UserCrud']['ReadAll']();
+}
+
 export function Startup(arg1) {
   return window['go']['backend']['UserCrud']['Startup'](arg1);
+}
+
+export function Update(arg1, arg2, arg3, arg4) {
+  return window['go']['backend']['UserCrud']['Update'](arg1, arg2, arg3, arg4);
 }

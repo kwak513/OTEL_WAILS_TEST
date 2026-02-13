@@ -4,4 +4,12 @@ import {context} from '../models';
 
 export function Connect(arg1:string):Promise<string>;
 
+export function Create(arg1:string,arg2:string,arg3:number):Promise<string>;
+
+export function Delete(arg1:number):Promise<string>;
+
+export function ReadAll():Promise<string>;
+
 export function Startup(arg1:context.Context):Promise<void>;
+
+export function Update(arg1:number,arg2:string,arg3:string,arg4:number):Promise<string>;
