@@ -12,6 +12,8 @@ import (
 
 	_"modernc.org/sqlite"
 
+	"encoding/json"
+
 )
 
 const defaultDBPath = "database/mysqlite.db"
@@ -124,4 +126,149 @@ func (u *UserCrud) createTable() error {
 	// SQL 실행
 	_, err := u.db.Exec(sql)
 	return err
+}
+
+// getDB - DB 연결 가져오기
+func (u *UserCrud) getDB() (*sql.DB, error) {
+	u.mu.Lock()
+	defer u.mu.Unlock()
+	
+	if u.db == nil {
+		return nil, fmt.Errorf("DB가 연결되지 않았습니다")
+	}
+	return u.db, nil
+}
+
+// Create - 사용자 생성 (INSERT)
+func (u *UserCrud) Create(name, email string, age int) (string, error) {
+	// 1. DB 연결 가져오기
+	db, err := u.getDB()
+	if err != nil {
+		return "", err
+	}
+	
+	// 2. SQL 문 작성 (INSERT)
+	sql := "INSERT INTO users (name, email, age) VALUES (?, ?, ?)"
+	
+	// 3. SQL 실행
+	res, err := db.Exec(sql, name, email, age)
+	if err != nil {
+		return "", fmt.Errorf("생성 실패: %v", err)
+	}
+	
+	// 4. 생성된 ID 가져오기
+	id, _ := res.LastInsertId()
+	
+	// 5. 성공 메시지 반환
+	return fmt.Sprintf("사용자 생성 성공! (ID: %d)", id), nil
+}
+
+// Update - 사용자 수정 (UPDATE)
+func (u *UserCrud) Update(id int, name, email string, age int) (string, error) {
+	// 1. DB 연결 가져오기
+	db, err := u.getDB()
+	if err != nil {
+		return "", err
+	}
+	
+	// 2. SQL 문 작성 (UPDATE)
+	sql := "UPDATE users SET name = ?, email = ?, age = ? WHERE id = ?"
+	
+	// 3. SQL 실행
+	res, err := db.Exec(sql, name, email, age, id)
+	if err != nil {
+		return "", fmt.Errorf("수정 실패: %v", err)
+	}
+	
+	// 4. 수정된 행 개수 가져오기
+	rowsAffected, _ := res.RowsAffected()
+	
+	// 5. 수정된 행이 없으면 오류
+	if rowsAffected == 0 {
+		return "", fmt.Errorf("ID %d인 사용자를 찾을 수 없습니다", id)
+	}
+
+	// 6. 성공 메시지 반환
+	return fmt.Sprintf("사용자 수정 성공! (ID: %d)", id), nil
+}
+
+
+// ReadAll - 모든 사용자 조회 (SELECT)
+func (u *UserCrud) ReadAll() (string, error) {
+	// 1. DB 연결 가져오기
+	db, err := u.getDB()
+	if err != nil {
+		return "", err
+	}
+	
+	// 2. SQL 문 작성 (SELECT)
+	sql := "SELECT id, name, email, age, created_at FROM users ORDER BY id"
+	
+	// 3. SQL 실행 (Query 사용 - SELECT는 Query!)
+	rows, err := db.Query(sql)
+	if err != nil {
+		return "", fmt.Errorf("조회 실패: %v", err)
+	}
+	defer rows.Close() // 반드시 닫기
+
+
+	// 4. 결과를 배열로 저장
+	var users []map[string]interface{}
+	for rows.Next() {
+		var id, age int
+		var name, email, createdAt string
+		
+		// 각 행의 데이터 읽기
+		if err := rows.Scan(&id, &name, &email, &age, &createdAt); err != nil {
+			return "", err
+		}
+		
+		// 맵으로 저장
+		users = append(users, map[string]interface{}{
+			"id":         id,
+			"name":       name,
+			"email":      email,
+			"age":        age,
+			"created_at": createdAt,
+		})
+	}
+
+	// 5. JSON으로 변환
+	result := map[string]interface{}{
+		"count": len(users),
+		"data":  users,
+	}
+	jsonData, _ := json.Marshal(result)
+	
+	// 6. JSON 문자열 반환
+	return string(jsonData), nil
+}
+
+// Delete - 사용자 삭제 (DELETE)
+func (u *UserCrud) Delete(id int) (string, error) {
+	// 1. DB 연결 가져오기
+	db, err := u.getDB()
+	if err != nil {
+		return "", err
+	}
+	
+	// 2. SQL 문 작성 (DELETE)
+	sql := "DELELTE FROM users WHERE id = ?"
+	
+	// 3. SQL 실행
+	res, err := db.Exec(sql, id)
+	if err != nil {
+		return "", fmt.Errorf("삭제 실패: %v", err)
+	}
+	
+	// 4. 삭제된 행 개수 가져오기
+	rowsAffected, _ := res.RowsAffected()
+	
+	// 5. 삭제된 행이 없으면 오류
+	if rowsAffected == 0 {
+		return "", fmt.Errorf("ID %d인 사용자를 찾을 수 없습니다", id)
+	}
+
+	// 6. 성공 메시지 반환
+	return fmt.Sprintf("사용자 삭제 성공! (ID: %d)", id), nil
 }
