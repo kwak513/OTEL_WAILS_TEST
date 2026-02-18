@@ -2,12 +2,12 @@ package models
 
 // MetricsRequest - 메트릭 조회 요청 구조체
 type MetricsRequest struct {
-	Start    int64              `json:"start"`
-	End      int64              `json:"end"`
-	Limit    int                `json:"limit"`
-	Offset   int                `json:"offset"`
-	OrderBy  *OrderBy           `json:"orderBy,omitempty"`
-	Filters  *Filters           `json:"filters,omitempty"`
+	Start   int64    `json:"start"`
+	End     int64    `json:"end"`
+	Limit   int      `json:"limit"`
+	Offset  int      `json:"offset"`
+	OrderBy *OrderBy `json:"orderBy,omitempty"`
+	Filters *Filters `json:"filters,omitempty"`
 }
 
 // OrderBy - 정렬 옵션
@@ -24,8 +24,8 @@ type Filters struct {
 
 // MetricsResponse - 메트릭 조회 응답 구조체
 type MetricsResponse struct {
-	Status string         `json:"status"`
-	Data   MetricsData    `json:"data"`
+	Status string      `json:"status"`
+	Data   MetricsData `json:"data"`
 }
 
 // MetricsData - 메트릭 데이터
@@ -43,4 +43,23 @@ type Metric struct {
 	Timeseries   int    `json:"timeseries"`
 	Samples      int    `json:"samples"`
 	LastReceived int64  `json:"lastReceived"`
+}
+
+// QueryRangeResponse - 쿼리 범위 응답 구조체
+type QueryRangeResponse struct {
+	Status string         `json:"status"`
+	Data   QueryRangeData `json:"data"`
+}
+
+// QueryRangeData - 쿼리 범위 데이터
+type QueryRangeData struct {
+	ResultType string             `json:"resultType"`
+	Result     []QueryRangeResult `json:"result"`
+	Stats      interface{}        `json:"stats"`
+}
+
+// QueryRangeResult - 쿼리 범위 결과 항목
+type QueryRangeResult struct {
+	Metric map[string]string `json:"metric"`
+	Values [][]interface{}   `json:"values"` // [[timestamp, value], ...]
 }
