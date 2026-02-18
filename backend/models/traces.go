@@ -83,3 +83,57 @@ type TraceDetail struct {
 
 // TraceDetailResponse - 트레이스 상세 조회 응답 (배열 형태)
 type TraceDetailResponse []TraceDetail
+
+// WaterfallRequest - 트레이스 waterfall 요청 구조체
+type WaterfallRequest struct {
+	SelectedSpanID              *string  `json:"selectedSpanId"`
+	IsSelectedSpanIDUnCollapsed bool     `json:"isSelectedSpanIDUnCollapsed"`
+	UncollapsedSpans            []string `json:"uncollapsedSpans"`
+}
+
+// WaterfallResponse - 트레이스 waterfall 응답 구조체
+type WaterfallResponse struct {
+	StartTimestampMillis          int64           `json:"startTimestampMillis"`
+	EndTimestampMillis            int64           `json:"endTimestampMillis"`
+	DurationNano                  int64           `json:"durationNano"`
+	RootServiceName               string          `json:"rootServiceName"`
+	RootServiceEntryPoint         string          `json:"rootServiceEntryPoint"`
+	TotalSpansCount               int             `json:"totalSpansCount"`
+	TotalErrorSpansCount          int             `json:"totalErrorSpansCount"`
+	ServiceNameToTotalDurationMap map[string]int  `json:"serviceNameToTotalDurationMap"`
+	Spans                         []WaterfallSpan `json:"spans"`
+	HasMissingSpans               bool            `json:"hasMissingSpans"`
+	UncollapsedSpans              []string        `json:"uncollapsedSpans"`
+}
+
+// WaterfallSpan - waterfall span 구조체
+type WaterfallSpan struct {
+	Timestamp        int64             `json:"timestamp"`
+	DurationNano     int64             `json:"durationNano"`
+	SpanID           string            `json:"spanId"`
+	RootSpanID       string            `json:"rootSpanId"`
+	TraceID          string            `json:"traceId"`
+	HasError         bool              `json:"hasError"`
+	Kind             int               `json:"kind"`
+	ServiceName      string            `json:"serviceName"`
+	Name             string            `json:"name"`
+	References       []SpanReference   `json:"references"`
+	TagMap           map[string]string `json:"tagMap"`
+	Event            []interface{}     `json:"event"`
+	RootName         string            `json:"rootName"`
+	StatusMessage    string            `json:"statusMessage"`
+	StatusCodeString string            `json:"statusCodeString"`
+	SpanKind         string            `json:"spanKind"`
+	Children         []WaterfallSpan   `json:"children"`
+	SubTreeNodeCount int               `json:"subTreeNodeCount"`
+	HasChildren      bool              `json:"hasChildren"`
+	HasSiblings      bool              `json:"hasSiblings"`
+	Level            int               `json:"level"`
+}
+
+// SpanReference - span 참조 구조체
+type SpanReference struct {
+	TraceID string `json:"traceId"`
+	SpanID  string `json:"spanId,omitempty"`
+	RefType string `json:"refType"`
+}

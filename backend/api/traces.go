@@ -172,3 +172,63 @@ func GetTraceDetail(traceId string) (*models.TraceDetailResponse, error) {
 
 	return &result, nil
 }
+
+// GetTraceWaterfall - 트레이스 waterfall 조회 (POST /api/v2/traces/waterfall/{traceId})
+func GetTraceWaterfall(traceId string, selectedSpanId *string, uncollapsedSpans []string) (*models.WaterfallResponse, error) {
+	client := NewSigNozClient()
+
+	// 요청 바디 생성
+	reqBody := models.WaterfallRequest{
+		SelectedSpanID:              selectedSpanId,
+		IsSelectedSpanIDUnCollapsed: false,
+		UncollapsedSpans:            uncollapsedSpans,
+	}
+
+	// 기본값 설정
+	if uncollapsedSpans == nil {
+		reqBody.UncollapsedSpans = []string{}
+	}
+
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return nil, fmt.Errorf("JSON 마샬링 실패: %w", err)
+	}
+
+	// API URL 생성 (traceId를 URL 경로에 포함)
+	apiURL := fmt.Sprintf("%s/api/v2/traces/waterfall/%s", client.BaseURL, url.PathEscape(traceId))
+
+	// HTTP 요청 생성
+	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return nil, fmt.Errorf("요청 생성 실패: %w", err)
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	client.addAuthHeaders(req)
+
+	// 요청 실행
+	resp, err := client.Client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("요청 실행 실패: %w", err)
+	}
+	defer resp.Body.Close()
+
+	// 응답 읽기
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("응답 읽기 실패: %w", err)
+	}
+
+	// HTTP 상태 코드 확인
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("API 오류 (상태 코드: %d): %s", resp.StatusCode, string(body))
+	}
+
+	// JSON 파싱
+	var result models.WaterfallResponse
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, fmt.Errorf("JSON 파싱 실패: %w", err)
+	}
+
+	return &result, nil
+}
