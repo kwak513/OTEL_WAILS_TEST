@@ -4,7 +4,7 @@ import Dashboard from './pages/Dashboard';
 import Metrics from './pages/Metrics';
 import Traces from './pages/Traces';
 import Logs from './pages/Logs';
-import UserCRUD from './pages/UserCRUD';
+import UserCRUD from './test/UserCRUD';
 
 function App() {
     return (
