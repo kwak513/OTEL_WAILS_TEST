@@ -71,3 +71,15 @@ type TracesQueryRangeResponse struct {
 	Status string      `json:"status"`
 	Data   interface{} `json:"data"` // 응답 구조가 복잡하므로 interface{}로 처리
 }
+
+// TraceDetail - 트레이스 상세 정보 구조체
+type TraceDetail struct {
+	StartTimestampMillis int64         `json:"startTimestampMillis"`
+	EndTimestampMillis   int64         `json:"endTimestampMillis"`
+	Columns              []string      `json:"columns"`
+	Events               []interface{} `json:"events"` // 복잡한 배열 구조이므로 interface{}로 처리
+	IsSubTree            bool          `json:"isSubTree"`
+}
+
+// TraceDetailResponse - 트레이스 상세 조회 응답 (배열 형태)
+type TraceDetailResponse []TraceDetail
