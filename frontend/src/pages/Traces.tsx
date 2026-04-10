@@ -179,7 +179,15 @@ export default function Traces() {
             <Column
               name="RESPONSE STATUS CODE"
               cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{
+                    textAlign: 'left',
+                    color: rows[i]?.responseStatusCode === 500 ? '#c23030' : undefined,
+                    fontWeight: rows[i]?.responseStatusCode === 500 ? 600 : undefined,
+                  }}
+                >
                   {rows[i]?.responseStatusCode ?? ''}
                 </Cell>
               )}

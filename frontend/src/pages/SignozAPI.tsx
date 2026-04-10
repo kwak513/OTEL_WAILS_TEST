@@ -10,7 +10,7 @@ export default function SignozAPI() {
         <div style={{ padding: 12, maxWidth: 900 }}>
           <div style={{ marginBottom: 25, textAlign: 'left' }}>Enter your SigNoz API key.</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <InputGroup placeholder="" fill style={{ flex: 1, minWidth: 520 }} />
+            <InputGroup type='password' placeholder="" fill style={{ flex: 1, minWidth: 520 }} />
             <Button intent="primary" text="Submit" />
           </div>
         </div>

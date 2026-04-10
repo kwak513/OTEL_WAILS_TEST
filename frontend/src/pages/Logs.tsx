@@ -5,23 +5,45 @@ import '@blueprintjs/core/lib/css/blueprint.css';
 type LogRow = {
   timestamp: string;
   serviceName: string;
+  level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
   body: string;
 };
+
+function levelIntent(level: LogRow['level']) {
+  switch (level) {
+    case 'ERROR':
+      return 'danger';
+    case 'WARN':
+      return 'warning';
+    case 'INFO':
+      return 'success';
+    case 'DEBUG':
+    default:
+      return 'none';
+  }
+}
 
 export default function Logs() {
   const rows = useMemo<LogRow[]>(() => {
     return Array.from({ length: 30 }, (_, idx) => {
       const now = Date.now();
       const ts = new Date(now - idx * 15_000).toISOString(); // 15초 간격
+      const levels: LogRow['level'][] = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
+      const level = levels[idx % levels.length];
 
       const body =
-        idx % 10 === 0
+        level === 'ERROR'
           ? `Something failed while processing request id=${1000 + idx}. Retrying...`
-          : `Request processed successfully id=${1000 + idx}.`;
+          : level === 'WARN'
+            ? `Request processed with warnings id=${1000 + idx}.`
+            : level === 'DEBUG'
+              ? `Debug details for request id=${1000 + idx}: cacheHit=${idx % 2 === 0}.`
+              : `Request processed successfully id=${1000 + idx}.`;
 
       return {
         timestamp: ts,
         serviceName: 'demo-application',
+        level,
         body,
       };
     });
@@ -57,6 +79,9 @@ export default function Logs() {
                 <Tag minimal>{row.timestamp}</Tag>
                 <Tag intent="primary" minimal>
                   {row.serviceName}
+                </Tag>
+                <Tag intent={levelIntent(row.level)} minimal>
+                  {row.level}
                 </Tag>
               </div>
 
