@@ -103,7 +103,7 @@ export default function Traces() {
   }, [rows, columnWidths]);
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '20px', paddingTop: '32px' }}>
       <H3 style={{ marginBottom: '16px' }}>Traces</H3>
       <Card>
         <div

@@ -28,7 +28,7 @@ export default function Logs() {
   }, []);
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '20px', paddingTop: '32px' }}>
       <H3 style={{ marginBottom: '16px' }}>Logs</H3>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>

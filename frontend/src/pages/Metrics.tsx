@@ -94,7 +94,7 @@ export default function Metrics() {
   }, [rows, columnWidths]);
 
   return (
-    <div style={{ padding: '20px' }}>
+    <div style={{ padding: '20px', paddingTop: '32px' }}>
       <H3 style={{ marginBottom: '16px' }}>Metrics</H3>
       <Card>
         <div
