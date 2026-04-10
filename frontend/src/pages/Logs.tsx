@@ -1,8 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, H3, Tag } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 
 import { GetLogs } from '../../wailsjs/go/main/App';
+
+const POLL_INTERVAL_MS = 3_000;
 
 type LogRow = {
   timestamp: string;
@@ -49,20 +51,26 @@ export default function Logs() {
   const [rows, setRows] = useState<LogRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inFlightRef = useRef(false);
 
   useEffect(() => {
-    async function load() {
+    let alive = true;
+
+    async function load({ silent }: { silent: boolean }) {
+      if (inFlightRef.current) return;
+      inFlightRef.current = true;
+
       const apiKey = (localStorage.getItem(SIGNOZ_API_KEY_STORAGE_KEY) || '').trim();
       if (!apiKey) {
-        setError(
-          'SigNoz API key is missing. Please enter it on the API key page and click Submit.',
-        );
+        if (!alive) return;
+        setError('SigNoz API key is missing. Please enter it on the API key page and click Submit.');
         setRows([]);
+        inFlightRef.current = false;
         return;
       }
 
-      setLoading(true);
-      setError(null);
+      if (!silent) setLoading(true);
+      if (alive) setError(null);
       try {
         const json = (await GetLogs(apiKey)) as unknown as LogsApiResponse;
         const list = json.data?.result?.[0]?.list ?? [];
@@ -87,16 +95,28 @@ export default function Logs() {
           };
         });
 
-        setRows(mapped);
+        if (alive) setRows(mapped);
       } catch (e) {
-        setRows([]);
-        setError(e instanceof Error ? e.message : String(e));
+        if (alive) {
+          setRows([]);
+          setError(e instanceof Error ? e.message : String(e));
+        }
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
+        inFlightRef.current = false;
       }
     }
 
-    void load();
+    void load({ silent: false });
+    const id = window.setInterval(() => {
+      void load({ silent: true });
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      alive = false;
+      inFlightRef.current = false;
+      window.clearInterval(id);
+    };
   }, []);
 
   return (

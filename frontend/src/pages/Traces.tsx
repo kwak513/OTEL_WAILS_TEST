@@ -171,6 +171,7 @@ export default function Traces() {
 
     return () => {
       alive = false;
+      inFlightRef.current = false;
       window.clearInterval(id);
     };
   }, []);

@@ -152,6 +152,7 @@ export default function Metrics() {
 
     return () => {
       alive = false;
+      inFlightRef.current = false;
       window.clearInterval(id);
     };
   }, []);
