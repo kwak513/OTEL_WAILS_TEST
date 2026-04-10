@@ -6,24 +6,16 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"kelly_golang_gui/backend/models"
 )
 
 // GetMetrics - 메트릭 목록 조회 (POST /api/v1/metrics)
-func GetMetrics(limit, offset int, orderBy *models.OrderBy, filters *models.Filters) (*models.MetricsResponse, error) {
-	client := NewSigNozClient()
+//
+// start/end는 unix milli 기준이며, apiKey는 요청 헤더 "SIGNOZ-API-KEY"로 전달된다.
+func GetMetrics(apiKey string, start, end int64, limit, offset int, orderBy *models.OrderBy, filters *models.Filters) (*models.MetricsResponse, error) {
+	client := NewSigNozClientWithAPIKey(apiKey)
 
-	// 현재 시간과 일주일 전 시간 계산
-	now := time.Now()
-	oneWeekAgo := now.AddDate(0, 0, -7)
-
-	// 밀리초 단위로 변환
-	end := now.UnixMilli()
-	start := oneWeekAgo.UnixMilli()
-
-	// 요청 바디 생성
 	reqBody := models.MetricsRequest{
 		Start:   start,
 		End:     end,
