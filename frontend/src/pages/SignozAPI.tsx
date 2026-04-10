@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { Button, Card, H3, InputGroup } from '@blueprintjs/core';
+import { Button, Card, Dialog, H3, InputGroup } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 
 const SIGNOZ_API_KEY_STORAGE_KEY = 'SIGNOZ_API_KEY';
 
 export default function SignozAPI() {
   const [apiKey, setApiKey] = useState('');
+  const [submitSuccessOpen, setSubmitSuccessOpen] = useState(false);
 
   useEffect(() => {
     const saved = localStorage.getItem(SIGNOZ_API_KEY_STORAGE_KEY);
@@ -33,11 +34,24 @@ export default function SignozAPI() {
               text="Submit"
               onClick={() => {
                 localStorage.setItem(SIGNOZ_API_KEY_STORAGE_KEY, apiKey.trim());
+                setSubmitSuccessOpen(true);
               }}
             />
           </div>
         </div>
       </Card>
+
+      <Dialog
+        isOpen={submitSuccessOpen}
+        onClose={() => setSubmitSuccessOpen(false)}
+        title="Submit success"
+      >
+        <div style={{ padding: 16, display: 'flex', justifyContent: 'flex-end' }}>
+          <Button intent="primary" onClick={() => setSubmitSuccessOpen(false)}>
+            OK
+          </Button>
+        </div>
+      </Dialog>
     </div>
   );
 }
