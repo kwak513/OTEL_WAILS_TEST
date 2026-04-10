@@ -173,7 +173,15 @@ export default function Metrics() {
             <Column
               name="METRIC"
               cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{
+                    textAlign: 'left',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {rows[i]?.metric ?? ''}
                 </Cell>
               )}
