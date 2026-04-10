@@ -1,12 +1,15 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Card, H3 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { Cell, Column, Table } from '@blueprintjs/table';
 import '@blueprintjs/table/lib/css/table.css';
 
+import { GetTraces } from '../../wailsjs/go/main/App';
+
 const DATA_COLUMNS = 6;
 const INDEX_COLUMN_WIDTH = 60;
 const TOTAL_COLUMNS = 1 + DATA_COLUMNS;
+const SIGNOZ_API_KEY_STORAGE_KEY = 'SIGNOZ_API_KEY';
 
 function distributeEqualWidths(totalPx: number, n: number): number[] {
   const base = Math.floor(totalPx / n);
@@ -20,28 +23,42 @@ type TracesTableRow = {
   name: string;
   durationNano: number;
   httpMethod: string;
-  responseStatusCode: number;
+  responseStatusCode: string;
 };
 
-export default function Traces() {
-  const rows = useMemo<TracesTableRow[]>(() => {
-    const methods = ['GET', 'POST', 'PUT', 'DELETE'] as const;
-    const services = ['frontend', 'backend', 'payments', 'auth'] as const;
+type TracesApiResponse = {
+  status: string;
+  data: {
+    resultType: string;
+    result: Array<{
+      queryName: string;
+      list: Array<{
+        timestamp: string;
+        data: {
+          durationNano: number;
+          name: string;
+          responseStatusCode: string;
+          serviceName: string;
+          spanID: string;
+          traceID: string;
+        };
+      }>;
+    }>;
+  };
+};
 
-    return Array.from({ length: 30 }, (_, idx) => {
-      const n = idx + 1;
-      const now = Date.now();
-      const ts = new Date(now - idx * 60_000).toISOString(); // 1분 간격
-      return {
-        timestamp: ts,
-        serviceName: services[idx % services.length],
-        name: `trace-${n}`,
-        durationNano: 50_000_000 + n * 3_250_000,
-        httpMethod: methods[idx % methods.length],
-        responseStatusCode: idx % 10 === 0 ? 500 : 200,
-      };
-    });
-  }, []);
+function extractHttpMethodFromName(name: string): string {
+  const first = (name || '').trim().split(/\s+/)[0]?.toUpperCase();
+  if (first === 'GET' || first === 'POST' || first === 'PUT' || first === 'DELETE' || first === 'PATCH' || first === 'HEAD' || first === 'OPTIONS') {
+    return first;
+  }
+  return 'N/A';
+}
+
+export default function Traces() {
+  const [rows, setRows] = useState<TracesTableRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const tableWrapRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<Table>(null);
@@ -92,7 +109,7 @@ export default function Traces() {
           case 5:
             return row.httpMethod;
           case 6:
-            return String(row.responseStatusCode);
+            return row.responseStatusCode;
           default:
             return '';
         }
@@ -101,6 +118,40 @@ export default function Traces() {
 
     return () => cancelAnimationFrame(raf);
   }, [rows, columnWidths]);
+
+  useEffect(() => {
+    async function load() {
+      const apiKey = (localStorage.getItem(SIGNOZ_API_KEY_STORAGE_KEY) || '').trim();
+      if (!apiKey) {
+        setError('SigNoz API key is missing. Please enter it on the API key page and click Submit.');
+        setRows([]);
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+      try {
+        const json = (await GetTraces(apiKey)) as unknown as TracesApiResponse;
+        const list = json.data?.result?.[0]?.list ?? [];
+        const mapped: TracesTableRow[] = list.map((item) => ({
+          timestamp: item.timestamp,
+          serviceName: item.data?.serviceName ?? '',
+          name: item.data?.name ?? '',
+          durationNano: Number(item.data?.durationNano ?? 0),
+          httpMethod: extractHttpMethodFromName(item.data?.name ?? ''),
+          responseStatusCode: item.data?.responseStatusCode ?? '',
+        }));
+        setRows(mapped);
+      } catch (e) {
+        setRows([]);
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void load();
+  }, []);
 
   return (
     <div style={{ padding: '20px', paddingTop: '32px', paddingBottom: '32px' }}>
@@ -184,8 +235,8 @@ export default function Traces() {
                   truncated={false}
                   style={{
                     textAlign: 'left',
-                    color: rows[i]?.responseStatusCode === 500 ? '#c23030' : undefined,
-                    fontWeight: rows[i]?.responseStatusCode === 500 ? 600 : undefined,
+                    color: rows[i]?.responseStatusCode === '500' ? '#c23030' : undefined,
+                    fontWeight: rows[i]?.responseStatusCode === '500' ? 600 : undefined,
                   }}
                 >
                   {rows[i]?.responseStatusCode ?? ''}
@@ -194,7 +245,7 @@ export default function Traces() {
             />
           </Table>
 
-          {rows.length === 0 && (
+          {rows.length === 0 && !loading && (
             <div
               style={{
                 position: 'absolute',
@@ -209,6 +260,22 @@ export default function Traces() {
               }}
             >
               There is no data.
+            </div>
+          )}
+
+          {error && (
+            <div
+              style={{
+                position: 'absolute',
+                left: 12,
+                right: 12,
+                bottom: 12,
+                color: '#c23030',
+                fontSize: '12px',
+                pointerEvents: 'none',
+              }}
+            >
+              {error}
             </div>
           )}
         </div>

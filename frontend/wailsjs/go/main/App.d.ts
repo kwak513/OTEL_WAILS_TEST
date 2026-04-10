@@ -4,4 +4,6 @@ import {models} from '../models';
 
 export function GetMetrics(arg1:string):Promise<models.MetricsResponse>;
 
+export function GetTraces(arg1:string):Promise<models.TracesQueryRangeResponse>;
+
 export function Greet(arg1:string):Promise<string>;

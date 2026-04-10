@@ -45,3 +45,18 @@ func (a *App) GetMetrics(apiKey string) (*models.MetricsResponse, error) {
 		&models.Filters{Items: []interface{}{}, Op: "AND"},
 	)
 }
+
+func (a *App) GetTraces(apiKey string) (*models.TracesQueryRangeResponse, error) {
+	now := time.Now()
+	end := now.UnixMilli()
+	start := now.Add(-24 * time.Hour).UnixMilli()
+
+	return api.QueryTracesRange(
+		apiKey,
+		start,
+		end,
+		60,
+		50,
+		[]models.OrderByItem{{ColumnName: "timestamp", Order: "desc"}},
+	)
+}

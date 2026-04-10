@@ -7,27 +7,20 @@ import (
 	"io"
 	"net/http"
 	"net/url"
-	"time"
 
 	"kelly_golang_gui/backend/models"
 )
 
 // QueryTracesRange - 트레이스 쿼리 범위 조회 (POST /api/v3/query_range)
-func QueryTracesRange(limit int, orderBy []models.OrderByItem) (*models.TracesQueryRangeResponse, error) {
-	client := NewSigNozClient()
-
-	// 현재 시간과 24시간 전 시간 계산
-	now := time.Now()
-	twentyFourHoursAgo := now.Add(-24 * time.Hour)
-
-	// 밀리초 단위로 변환
-	end := now.UnixMilli()
-	start := twentyFourHoursAgo.UnixMilli()
-	step := 60 // 고정값
+func QueryTracesRange(apiKey string, start, end int64, step int, limit int, orderBy []models.OrderByItem) (*models.TracesQueryRangeResponse, error) {
+	client := NewSigNozClientWithAPIKey(apiKey)
 
 	// 기본값 설정
 	if limit == 0 {
 		limit = 50
+	}
+	if step == 0 {
+		step = 60
 	}
 	if orderBy == nil || len(orderBy) == 0 {
 		orderBy = []models.OrderByItem{
@@ -57,6 +50,7 @@ func QueryTracesRange(limit int, orderBy []models.OrderByItem) (*models.TracesQu
 						{ColumnName: "serviceName", Key: "serviceName", DataType: "string", Type: "tag"},
 						{ColumnName: "name", Key: "name", DataType: "string", Type: "tag"},
 						{ColumnName: "durationNano", Key: "durationNano", DataType: "float64", Type: "tag"},
+						{ColumnName: "responseStatusCode", Key: "responseStatusCode", DataType: "int64", Type: "tag"},
 					},
 					AggregateAttribute: models.AggregateAttribute{
 						ID:       "------false",

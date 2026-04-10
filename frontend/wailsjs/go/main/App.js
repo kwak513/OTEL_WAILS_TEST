@@ -6,6 +6,10 @@ export function GetMetrics(arg1) {
   return window['go']['main']['App']['GetMetrics'](arg1);
 }
 
+export function GetTraces(arg1) {
+  return window['go']['main']['App']['GetTraces'](arg1);
+}
+
 export function Greet(arg1) {
   return window['go']['main']['App']['Greet'](arg1);
 }
