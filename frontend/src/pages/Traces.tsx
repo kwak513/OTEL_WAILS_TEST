@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Card, H3 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { Cell, Column, Table } from '@blueprintjs/table';
@@ -12,14 +12,6 @@ function distributeEqualWidths(totalPx: number, n: number): number[] {
   const base = Math.floor(totalPx / n);
   let remainder = totalPx - base * n;
   return Array.from({ length: n }, (_, i) => base + (i < remainder ? 1 : 0));
-}
-
-function centeredHeader(name: string) {
-  return (
-    <div style={{ width: '100%', textAlign: 'center' }}>
-      {name}
-    </div>
-  );
 }
 
 type TracesTableRow = {
@@ -52,6 +44,7 @@ export default function Traces() {
   }, []);
 
   const tableWrapRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<Table>(null);
   const [columnWidths, setColumnWidths] = useState<number[]>([]);
 
   useLayoutEffect(() => {
@@ -77,6 +70,38 @@ export default function Traces() {
     return () => ro.disconnect();
   }, []);
 
+  useEffect(() => {
+    const t = tableRef.current;
+    if (!t) return;
+
+    const raf = requestAnimationFrame(() => {
+      t.resizeRowsByApproximateHeight((rowIndex, columnIndex) => {
+        const row = rows[rowIndex];
+        if (!row) return '';
+        switch (columnIndex) {
+          case 0:
+            return String(rowIndex + 1);
+          case 1:
+            return row.timestamp;
+          case 2:
+            return row.serviceName;
+          case 3:
+            return row.name;
+          case 4:
+            return String(row.durationNano);
+          case 5:
+            return row.httpMethod;
+          case 6:
+            return String(row.responseStatusCode);
+          default:
+            return '';
+        }
+      });
+    });
+
+    return () => cancelAnimationFrame(raf);
+  }, [rows, columnWidths]);
+
   return (
     <div style={{ padding: '20px' }}>
       <H3 style={{ marginBottom: '16px' }}>Traces</H3>
@@ -90,6 +115,7 @@ export default function Traces() {
           }}
         >
           <Table
+            ref={tableRef}
             numRows={rows.length}
             defaultRowHeight={32}
             enableGhostCells={false}
@@ -100,59 +126,60 @@ export default function Traces() {
           >
             <Column
               name=""
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>{i + 1}</Cell>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{ textAlign: 'right' }}
+                >
+                  {i + 1}
+                </Cell>
               )}
             />
             <Column
               name="TIMESTAMP"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
                   {rows[i]?.timestamp ?? ''}
                 </Cell>
               )}
             />
             <Column
               name="SERVICE NAME"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
                   {rows[i]?.serviceName ?? ''}
                 </Cell>
               )}
             />
             <Column
               name="NAME"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>{rows[i]?.name ?? ''}</Cell>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                  {rows[i]?.name ?? ''}
+                </Cell>
               )}
             />
             <Column
               name="DURATION NANO"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
                   {rows[i]?.durationNano ?? ''}
                 </Cell>
               )}
             />
             <Column
               name="HTTP METHOD"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
                   {rows[i]?.httpMethod ?? ''}
                 </Cell>
               )}
             />
             <Column
               name="RESPONSE STATUS CODE"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
                   {rows[i]?.responseStatusCode ?? ''}
                 </Cell>
               )}
