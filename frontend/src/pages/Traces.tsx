@@ -139,7 +139,7 @@ export default function Traces() {
           name: item.data?.name ?? '',
           durationNano: Number(item.data?.durationNano ?? 0),
           httpMethod: extractHttpMethodFromName(item.data?.name ?? ''),
-          responseStatusCode: item.data?.responseStatusCode ?? '',
+          responseStatusCode: (item.data?.responseStatusCode || '').trim() || 'N/A',
         }));
         setRows(mapped);
       } catch (e) {
@@ -190,7 +190,15 @@ export default function Traces() {
             <Column
               name="TIMESTAMP"
               cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{
+                    textAlign: 'left',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {rows[i]?.timestamp ?? ''}
                 </Cell>
               )}
@@ -198,7 +206,15 @@ export default function Traces() {
             <Column
               name="SERVICE NAME"
               cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{
+                    textAlign: 'left',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {rows[i]?.serviceName ?? ''}
                 </Cell>
               )}
@@ -206,7 +222,15 @@ export default function Traces() {
             <Column
               name="NAME"
               cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{
+                    textAlign: 'left',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {rows[i]?.name ?? ''}
                 </Cell>
               )}
@@ -214,7 +238,15 @@ export default function Traces() {
             <Column
               name="DURATION NANO"
               cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{
+                    textAlign: 'left',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {rows[i]?.durationNano ?? ''}
                 </Cell>
               )}
@@ -222,7 +254,15 @@ export default function Traces() {
             <Column
               name="HTTP METHOD"
               cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{
+                    textAlign: 'left',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {rows[i]?.httpMethod ?? ''}
                 </Cell>
               )}
@@ -235,11 +275,15 @@ export default function Traces() {
                   truncated={false}
                   style={{
                     textAlign: 'left',
-                    color: rows[i]?.responseStatusCode === '500' ? '#c23030' : undefined,
-                    fontWeight: rows[i]?.responseStatusCode === '500' ? 600 : undefined,
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                    color:
+                      rows[i]?.responseStatusCode === '500' ? '#c23030' : undefined,
+                    fontWeight:
+                      rows[i]?.responseStatusCode === '500' ? 600 : undefined,
                   }}
                 >
-                  {rows[i]?.responseStatusCode ?? ''}
+                  {rows[i]?.responseStatusCode ?? 'N/A'}
                 </Cell>
               )}
             />
