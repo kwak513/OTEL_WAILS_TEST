@@ -10,6 +10,7 @@ const DATA_COLUMNS = 6;
 const INDEX_COLUMN_WIDTH = 60;
 const TOTAL_COLUMNS = 1 + DATA_COLUMNS;
 const SIGNOZ_API_KEY_STORAGE_KEY = 'SIGNOZ_API_KEY';
+const POLL_INTERVAL_MS = 7_000;
 
 function distributeEqualWidths(totalPx: number, n: number): number[] {
   const base = Math.floor(totalPx / n);
@@ -63,6 +64,7 @@ export default function Traces() {
   const tableWrapRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<Table>(null);
   const [columnWidths, setColumnWidths] = useState<number[]>([]);
+  const inFlightRef = useRef(false);
 
   useLayoutEffect(() => {
     const el = tableWrapRef.current;
@@ -120,16 +122,25 @@ export default function Traces() {
   }, [rows, columnWidths]);
 
   useEffect(() => {
-    async function load() {
+    let alive = true;
+
+    async function load({ silent }: { silent: boolean }) {
+      if (inFlightRef.current) return;
+      inFlightRef.current = true;
+
       const apiKey = (localStorage.getItem(SIGNOZ_API_KEY_STORAGE_KEY) || '').trim();
       if (!apiKey) {
-        setError('SigNoz API key is missing. Please enter it on the API key page and click Submit.');
+        if (!alive) return;
+        setError(
+          'SigNoz API key is missing. Please enter it on the API key page and click Submit.',
+        );
         setRows([]);
+        inFlightRef.current = false;
         return;
       }
 
-      setLoading(true);
-      setError(null);
+      if (!silent) setLoading(true);
+      if (alive) setError(null);
       try {
         const json = (await GetTraces(apiKey)) as unknown as TracesApiResponse;
         const list = json.data?.result?.[0]?.list ?? [];
@@ -141,16 +152,27 @@ export default function Traces() {
           httpMethod: extractHttpMethodFromName(item.data?.name ?? ''),
           responseStatusCode: (item.data?.responseStatusCode || '').trim() || 'N/A',
         }));
-        setRows(mapped);
+        if (alive) setRows(mapped);
       } catch (e) {
-        setRows([]);
-        setError(e instanceof Error ? e.message : String(e));
+        if (alive) {
+          setRows([]);
+          setError(e instanceof Error ? e.message : String(e));
+        }
       } finally {
-        setLoading(false);
+        if (alive) setLoading(false);
+        inFlightRef.current = false;
       }
     }
 
-    void load();
+    void load({ silent: false });
+    const id = window.setInterval(() => {
+      void load({ silent: true });
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      alive = false;
+      window.clearInterval(id);
+    };
   }, []);
 
   return (
