@@ -103,14 +103,14 @@ export default function Traces() {
   }, [rows, columnWidths]);
 
   return (
-    <div style={{ padding: '20px', paddingTop: '32px' }}>
-      <H3 style={{ marginBottom: '16px' }}>Traces</H3>
+    <div style={{ padding: '20px', paddingTop: '32px', paddingBottom: '32px' }}>
+      <H3 style={{ marginBottom: '24px' }}>Traces</H3>
       <Card>
         <div
           ref={tableWrapRef}
           style={{
             position: 'relative',
-            height: 'min(60vh, 480px)',
+            height: '80vh',
             width: '100%',
           }}
         >

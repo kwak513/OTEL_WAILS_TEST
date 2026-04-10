@@ -28,42 +28,53 @@ export default function Logs() {
   }, []);
 
   return (
-    <div style={{ padding: '20px', paddingTop: '32px' }}>
-      <H3 style={{ marginBottom: '16px' }}>Logs</H3>
+    <div style={{ padding: '20px', paddingTop: '32px', paddingBottom: '32px' }}>
+      <H3 style={{ marginBottom: '24px' }}>Logs</H3>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {rows.map((row, i) => (
-          <Card key={`${row.timestamp}-${i}`} style={{ padding: 12 }}>
-            {/* timestamp + service.name */}
-            <div
-              style={{
-                display: 'flex',
-                gap: 8,
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                marginBottom: 8,
-              }}
-            >
-              <Tag minimal>{row.timestamp}</Tag>
-              <Tag intent="primary" minimal>
-                {row.serviceName}
-              </Tag>
-            </div>
+      <Card>
+        <div
+          style={{
+            height: '80vh',
+            overflow: 'auto',
+            padding: 12,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
+          }}
+        >
+          {rows.map((row, i) => (
+            <Card key={`${row.timestamp}-${i}`} style={{ padding: 12 }}>
+              {/* timestamp + service.name */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 8,
+                  alignItems: 'center',
+                  flexWrap: 'wrap',
+                  marginBottom: 8,
+                }}
+              >
+                <Tag minimal>{row.timestamp}</Tag>
+                <Tag intent="primary" minimal>
+                  {row.serviceName}
+                </Tag>
+              </div>
 
-            {/* body */}
-            <div
-              style={{
-                textAlign: 'left',
-                whiteSpace: 'pre-wrap',
-                overflowWrap: 'anywhere',
-                lineHeight: 1.4,
-              }}
-            >
-              {row.body}
-            </div>
-          </Card>
-        ))}
-      </div>
+              {/* body */}
+              <div
+                style={{
+                  textAlign: 'left',
+                  whiteSpace: 'pre-wrap',
+                  overflowWrap: 'anywhere',
+                  lineHeight: 1.4,
+                }}
+              >
+                {row.body}
+              </div>
+            </Card>
+          ))}
+        </div>
+      </Card>
     </div>
   );
 }
