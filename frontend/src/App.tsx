@@ -4,7 +4,6 @@ import Dashboard from './pages/Dashboard';
 import Metrics from './pages/Metrics';
 import Traces from './pages/Traces';
 import Logs from './pages/Logs';
-import UserCRUD from './test/UserCRUD';
 
 function App() {
     return (
@@ -15,7 +14,6 @@ function App() {
                 <Route path="metrics" element={<Metrics />} />
                 <Route path="traces" element={<Traces />} />
                 <Route path="logs" element={<Logs />} />
-                <Route path="usercrud" element={<UserCRUD />} />
             </Route>
         </Routes>
     );
