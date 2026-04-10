@@ -60,3 +60,18 @@ func (a *App) GetTraces(apiKey string) (*models.TracesQueryRangeResponse, error)
 		[]models.OrderByItem{{ColumnName: "timestamp", Order: "desc"}},
 	)
 }
+
+func (a *App) GetLogs(apiKey string) (*models.LogsQueryRangeResponse, error) {
+	now := time.Now()
+	end := now.UnixMilli()
+	start := now.Add(-24 * time.Hour).UnixMilli()
+
+	return api.QueryLogsRange(
+		apiKey,
+		start,
+		end,
+		60,
+		50,
+		[]models.OrderByItem{{ColumnName: "timestamp", Order: "desc"}},
+	)
+}
