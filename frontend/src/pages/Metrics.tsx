@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Card, H3 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { Cell, Column, Table } from '@blueprintjs/table';
@@ -12,14 +12,6 @@ function distributeEqualWidths(totalPx: number, n: number): number[] {
   const base = Math.floor(totalPx / n);
   let remainder = totalPx - base * n;
   return Array.from({ length: n }, (_, i) => base + (i < remainder ? 1 : 0));
-}
-
-function centeredHeader(name: string) {
-  return (
-    <div style={{ width: '100%', textAlign: 'center' }}>
-      {name}
-    </div>
-  );
 }
 
 type MetricsTableRow = {
@@ -44,6 +36,7 @@ export default function Metrics() {
     });
   }, []);
   const tableWrapRef = useRef<HTMLDivElement>(null);
+  const tableRef = useRef<Table>(null);
   const [columnWidths, setColumnWidths] = useState<number[]>([]);
 
   useLayoutEffect(() => {
@@ -69,6 +62,37 @@ export default function Metrics() {
     return () => ro.disconnect();
   }, []);
 
+  useEffect(() => {
+    const t = tableRef.current;
+    if (!t) return;
+
+    // Defer until after paint so the table measures with current widths/styles.
+    const raf = requestAnimationFrame(() => {
+      t.resizeRowsByApproximateHeight((rowIndex, columnIndex) => {
+        const row = rows[rowIndex];
+        if (!row) return '';
+        switch (columnIndex) {
+          case 0:
+            return String(rowIndex + 1);
+          case 1:
+            return row.metric;
+          case 2:
+            return row.description;
+          case 3:
+            return row.type;
+          case 4:
+            return String(row.samples);
+          case 5:
+            return String(row.timeSeries);
+          default:
+            return '';
+        }
+      });
+    });
+
+    return () => cancelAnimationFrame(raf);
+  }, [rows, columnWidths]);
+
   return (
     <div style={{ padding: '20px' }}>
       <H3 style={{ marginBottom: '16px' }}>Metrics</H3>
@@ -82,6 +106,7 @@ export default function Metrics() {
           }}
         >
           <Table
+            ref={tableRef}
             numRows={rows.length}
             defaultRowHeight={32}
             enableGhostCells={false}
@@ -90,48 +115,52 @@ export default function Metrics() {
           >
             <Column
               name=""
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>{i + 1}</Cell>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{ textAlign: 'right' }}
+                >
+                  {i + 1}
+                </Cell>
               )}
             />
             <Column
               name="METRIC"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>{rows[i]?.metric ?? ''}</Cell>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                  {rows[i]?.metric ?? ''}
+                </Cell>
               )}
             />
             <Column
               name="DESCRIPTION"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
                   {rows[i]?.description ?? ''}
                 </Cell>
               )}
             />
             <Column
               name="TYPE"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>{rows[i]?.type ?? ''}</Cell>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                  {rows[i]?.type ?? ''}
+                </Cell>
               )}
             />
             <Column
               name="SAMPLES"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
                   {rows[i]?.samples ?? ''}
                 </Cell>
               )}
             />
             <Column
               name="TIME SERIES"
-              nameRenderer={(name) => centeredHeader(name)}
               cellRenderer={(i) => (
-                <Cell style={{ textAlign: 'center' }}>
+                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
                   {rows[i]?.timeSeries ?? ''}
                 </Cell>
               )}
