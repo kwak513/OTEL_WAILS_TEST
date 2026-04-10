@@ -53,15 +53,7 @@ export default function Layout() {
                         color: '#f5f8fa',
                         flex: 1,
                     }}
-                >
-                    <MenuItem
-                        text={collapsed ? undefined : 'Dashboard'}
-                        icon="dashboard"
-                        active={isActive('/dashboard')}
-                        onClick={() => navigate('/dashboard')}
-                        style={{ color: '#f5f8fa' }}
-                        title={collapsed ? 'Dashboard' : undefined}
-                    />
+                >                    
                     <MenuItem
                         text={collapsed ? undefined : 'Metrics'}
                         icon="timeline-line-chart"
@@ -85,6 +77,14 @@ export default function Layout() {
                         onClick={() => navigate('/logs')}
                         style={{ color: '#f5f8fa' }}
                         title={collapsed ? 'Logs' : undefined}
+                    />
+                    <MenuItem
+                        text={collapsed ? undefined : 'API key'}
+                        icon="key"
+                        active={isActive('/api-key')}
+                        onClick={() => navigate('/api-key')}
+                        style={{ color: '#f5f8fa' }}
+                        title={collapsed ? 'API key' : undefined}
                     />
                 </Menu>
             </div>

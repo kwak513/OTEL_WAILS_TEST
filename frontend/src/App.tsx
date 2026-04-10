@@ -1,21 +1,19 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './layout/Layout';
-import Dashboard from './pages/Dashboard';
+import SignozAPI from './pages/SignozAPI';
 import Metrics from './pages/Metrics';
 import Traces from './pages/Traces';
 import Logs from './pages/Logs';
-import UserCRUD from './test/UserCRUD';
 
 function App() {
     return (
         <Routes>
             <Route path="/" element={<Layout />}>
-                <Route index element={<Navigate to="/dashboard" replace />} />
-                <Route path="dashboard" element={<Dashboard />} />
+                <Route index element={<Navigate to="/api-key" replace />} />
+                <Route path="api-key" element={<SignozAPI />} />
                 <Route path="metrics" element={<Metrics />} />
                 <Route path="traces" element={<Traces />} />
                 <Route path="logs" element={<Logs />} />
-                <Route path="usercrud" element={<UserCRUD />} />
             </Route>
         </Routes>
     );
