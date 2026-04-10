@@ -3,6 +3,10 @@ package main
 import (
 	"context"
 	"fmt"
+	"time"
+
+	"kelly_golang_gui/backend/api"
+	"kelly_golang_gui/backend/models"
 )
 
 // App struct
@@ -24,4 +28,50 @@ func (a *App) startup(ctx context.Context) {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+func (a *App) GetMetrics(apiKey string) (*models.MetricsResponse, error) {
+	now := time.Now()
+	end := now.UnixMilli()
+	start := now.Add(-24 * time.Hour).UnixMilli()
+
+	return api.GetMetrics(
+		apiKey,
+		start,
+		end,
+		100,
+		0,
+		&models.OrderBy{ColumnName: "metric_name", Order: "asc"},
+		&models.Filters{Items: []interface{}{}, Op: "AND"},
+	)
+}
+
+func (a *App) GetTraces(apiKey string) (*models.TracesQueryRangeResponse, error) {
+	now := time.Now()
+	end := now.UnixMilli()
+	start := now.Add(-24 * time.Hour).UnixMilli()
+
+	return api.QueryTracesRange(
+		apiKey,
+		start,
+		end,
+		60,
+		50,
+		[]models.OrderByItem{{ColumnName: "timestamp", Order: "desc"}},
+	)
+}
+
+func (a *App) GetLogs(apiKey string) (*models.LogsQueryRangeResponse, error) {
+	now := time.Now()
+	end := now.UnixMilli()
+	start := now.Add(-24 * time.Hour).UnixMilli()
+
+	return api.QueryLogsRange(
+		apiKey,
+		start,
+		end,
+		60,
+		50,
+		[]models.OrderByItem{{ColumnName: "timestamp", Order: "desc"}},
+	)
 }

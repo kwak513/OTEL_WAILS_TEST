@@ -1,12 +1,16 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Card, H3 } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 import { Cell, Column, Table } from '@blueprintjs/table';
 import '@blueprintjs/table/lib/css/table.css';
 
+import { GetMetrics } from '../../wailsjs/go/main/App';
+
 const DATA_COLUMNS = 5;
 const INDEX_COLUMN_WIDTH = 60;
 const TOTAL_COLUMNS = 1 + DATA_COLUMNS;
+const SIGNOZ_API_KEY_STORAGE_KEY = 'SIGNOZ_API_KEY';
+const POLL_INTERVAL_MS = 15_000;
 
 function distributeEqualWidths(totalPx: number, n: number): number[] {
   const base = Math.floor(totalPx / n);
@@ -22,22 +26,31 @@ type MetricsTableRow = {
   timeSeries: number;
 };
 
+type MetricsApiResponse = {
+  status: string;
+  data: {
+    metrics: Array<{
+      metric_name: string;
+      description: string;
+      type: string;
+      unit: string;
+      timeseries: number;
+      samples: number;
+      lastReceived: number;
+    }>;
+    total: number;
+  };
+};
+
 export default function Metrics() {
-  const rows = useMemo<MetricsTableRow[]>(() => {
-    return Array.from({ length: 30 }, (_, idx) => {
-      const n = idx + 1;
-      return {
-        metric: `metric${n}`,
-        description: `desc${n}`,
-        type: n % 3 === 0 ? 'gauge' : n % 3 === 1 ? 'counter' : 'histogram',
-        samples: 1000 + n * 37,
-        timeSeries: 10 + (n % 7) * 3,
-      };
-    });
-  }, []);
+  const [rows, setRows] = useState<MetricsTableRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   const tableWrapRef = useRef<HTMLDivElement>(null);
   const tableRef = useRef<Table>(null);
   const [columnWidths, setColumnWidths] = useState<number[]>([]);
+  const inFlightRef = useRef(false);
 
   useLayoutEffect(() => {
     const el = tableWrapRef.current;
@@ -93,6 +106,57 @@ export default function Metrics() {
     return () => cancelAnimationFrame(raf);
   }, [rows, columnWidths]);
 
+  useEffect(() => {
+    let alive = true;
+
+    async function load({ silent }: { silent: boolean }) {
+      if (inFlightRef.current) return;
+      inFlightRef.current = true;
+
+      const apiKey = (localStorage.getItem(SIGNOZ_API_KEY_STORAGE_KEY) || '').trim();
+      if (!apiKey) {
+        if (!alive) return;
+        setError('SigNoz API key is missing. Please enter it on the API key page and click Submit.');
+        setRows([]);
+        inFlightRef.current = false;
+        return;
+      }
+
+      if (!silent) setLoading(true);
+      if (alive) setError(null);
+      try {
+        const json = (await GetMetrics(apiKey)) as unknown as MetricsApiResponse;
+        const mapped: MetricsTableRow[] = (json.data?.metrics ?? []).map((m) => ({
+          metric: m.metric_name,
+          description: m.description ?? '',
+          type: m.type ?? '',
+          samples: m.samples ?? 0,
+          timeSeries: m.timeseries ?? 0,
+        }));
+        if (alive) setRows(mapped);
+      } catch (e) {
+        if (alive) {
+          setRows([]);
+          setError(e instanceof Error ? e.message : String(e));
+        }
+      } finally {
+        if (alive) setLoading(false);
+        inFlightRef.current = false;
+      }
+    }
+
+    void load({ silent: false });
+    const id = window.setInterval(() => {
+      void load({ silent: true });
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      alive = false;
+      inFlightRef.current = false;
+      window.clearInterval(id);
+    };
+  }, []);
+
   return (
     <div style={{ padding: '20px', paddingTop: '32px', paddingBottom: '32px' }}>
       <H3 style={{ marginBottom: '24px' }}>Metrics</H3>
@@ -128,7 +192,15 @@ export default function Metrics() {
             <Column
               name="METRIC"
               cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                <Cell
+                  wrapText
+                  truncated={false}
+                  style={{
+                    textAlign: 'left',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
                   {rows[i]?.metric ?? ''}
                 </Cell>
               )}
@@ -166,7 +238,7 @@ export default function Metrics() {
               )}
             />
           </Table>
-          {rows.length === 0 && (
+          {rows.length === 0 && !loading && (
             <div
               style={{
                 position: 'absolute',
@@ -181,6 +253,22 @@ export default function Metrics() {
               }}
             >
               There is no data.
+            </div>
+          )}
+
+          {error && (
+            <div
+              style={{
+                position: 'absolute',
+                left: 12,
+                right: 12,
+                bottom: 12,
+                color: '#c23030',
+                fontSize: '12px',
+                pointerEvents: 'none',
+              }}
+            >
+              {error}
             </div>
           )}
         </div>

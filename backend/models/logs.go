@@ -34,6 +34,7 @@ type LogData struct {
 	Body             string             `json:"body"`
 	ID               string             `json:"id"`
 	ResourcesString  map[string]string  `json:"resources_string"`
+	ServiceName      string             `json:"serviceName"`
 	ScopeName        string             `json:"scope_name"`
 	ScopeString      map[string]string  `json:"scope_string"`
 	ScopeVersion     string             `json:"scope_version"`

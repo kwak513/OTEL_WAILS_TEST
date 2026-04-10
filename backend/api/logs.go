@@ -6,27 +6,20 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	"kelly_golang_gui/backend/models"
 )
 
 // QueryLogsRange - 로그 쿼리 범위 조회 (POST /api/v3/query_range)
-func QueryLogsRange(limit int, orderBy []models.OrderByItem) (*models.LogsQueryRangeResponse, error) {
-	client := NewSigNozClient()
-
-	// 현재 시간과 24시간 전 시간 계산
-	now := time.Now()
-	twentyFourHoursAgo := now.Add(-24 * time.Hour)
-
-	// 밀리초 단위로 변환
-	end := now.UnixMilli()
-	start := twentyFourHoursAgo.UnixMilli()
-	step := 60 // 고정값
+func QueryLogsRange(apiKey string, start int64, end int64, step int, limit int, orderBy []models.OrderByItem) (*models.LogsQueryRangeResponse, error) {
+	client := NewSigNozClientWithAPIKey(apiKey)
 
 	// 기본값 설정
+	if step == 0 {
+		step = 60
+	}
 	if limit == 0 {
-		limit = 100
+		limit = 50
 	}
 	if orderBy == nil || len(orderBy) == 0 {
 		orderBy = []models.OrderByItem{

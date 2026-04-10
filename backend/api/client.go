@@ -35,6 +35,15 @@ func NewSigNozClient() *SigNozClient {
 	}
 }
 
+// NewSigNozClientWithAPIKey - 환경변수 BaseURL + 주어진 APIKey로 클라이언트 생성
+func NewSigNozClientWithAPIKey(apiKey string) *SigNozClient {
+	c := NewSigNozClient()
+	if strings.TrimSpace(apiKey) != "" {
+		c.APIKey = strings.TrimSpace(apiKey)
+	}
+	return c
+}
+
 // addAuthHeaders - 인증 헤더 추가
 func (c *SigNozClient) addAuthHeaders(req *http.Request) {
 	if c.APIKey != "" {

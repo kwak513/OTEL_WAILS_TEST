@@ -68,8 +68,32 @@ type OrderByItem struct {
 
 // TracesQueryRangeResponse - 트레이스 쿼리 범위 응답 구조체
 type TracesQueryRangeResponse struct {
-	Status string      `json:"status"`
-	Data   interface{} `json:"data"` // 응답 구조가 복잡하므로 interface{}로 처리
+	Status string               `json:"status"`
+	Data   TracesQueryRangeData `json:"data"`
+}
+
+type TracesQueryRangeData struct {
+	ResultType string                `json:"resultType"`
+	Result     []TracesQueryRangeItem `json:"result"`
+}
+
+type TracesQueryRangeItem struct {
+	QueryName string               `json:"queryName"`
+	List      []TracesQueryRangeRow `json:"list"`
+}
+
+type TracesQueryRangeRow struct {
+	Timestamp string               `json:"timestamp"`
+	Data      TracesQueryRangeRowData `json:"data"`
+}
+
+type TracesQueryRangeRowData struct {
+	DurationNano        float64 `json:"durationNano"`
+	Name                string  `json:"name"`
+	ResponseStatusCode  string  `json:"responseStatusCode"`
+	ServiceName         string  `json:"serviceName"`
+	SpanID              string  `json:"spanID"`
+	TraceID             string  `json:"traceID"`
 }
 
 // TraceDetail - 트레이스 상세 정보 구조체

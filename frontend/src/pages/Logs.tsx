@@ -1,12 +1,35 @@
-import { useMemo } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Card, H3, Tag } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
+
+import { GetLogs } from '../../wailsjs/go/main/App';
+
+const POLL_INTERVAL_MS = 3_000;
 
 type LogRow = {
   timestamp: string;
   serviceName: string;
   level: 'DEBUG' | 'INFO' | 'WARN' | 'ERROR';
   body: string;
+};
+
+type LogsApiResponse = {
+  status: string;
+  data: {
+    resultType: string;
+    result: Array<{
+      queryName: string;
+      list: Array<{
+        timestamp: string;
+        data: {
+          body: string;
+          severity_text: string;
+          serviceName?: string;
+          resources_string?: Record<string, string>;
+        };
+      }>;
+    }>;
+  };
 };
 
 function levelIntent(level: LogRow['level']) {
@@ -24,29 +47,76 @@ function levelIntent(level: LogRow['level']) {
 }
 
 export default function Logs() {
-  const rows = useMemo<LogRow[]>(() => {
-    return Array.from({ length: 30 }, (_, idx) => {
-      const now = Date.now();
-      const ts = new Date(now - idx * 15_000).toISOString(); // 15초 간격
-      const levels: LogRow['level'][] = ['DEBUG', 'INFO', 'WARN', 'ERROR'];
-      const level = levels[idx % levels.length];
+  const SIGNOZ_API_KEY_STORAGE_KEY = 'SIGNOZ_API_KEY';
+  const [rows, setRows] = useState<LogRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const inFlightRef = useRef(false);
 
-      const body =
-        level === 'ERROR'
-          ? `Something failed while processing request id=${1000 + idx}. Retrying...`
-          : level === 'WARN'
-            ? `Request processed with warnings id=${1000 + idx}.`
-            : level === 'DEBUG'
-              ? `Debug details for request id=${1000 + idx}: cacheHit=${idx % 2 === 0}.`
-              : `Request processed successfully id=${1000 + idx}.`;
+  useEffect(() => {
+    let alive = true;
 
-      return {
-        timestamp: ts,
-        serviceName: 'demo-application',
-        level,
-        body,
-      };
-    });
+    async function load({ silent }: { silent: boolean }) {
+      if (inFlightRef.current) return;
+      inFlightRef.current = true;
+
+      const apiKey = (localStorage.getItem(SIGNOZ_API_KEY_STORAGE_KEY) || '').trim();
+      if (!apiKey) {
+        if (!alive) return;
+        setError('SigNoz API key is missing. Please enter it on the API key page and click Submit.');
+        setRows([]);
+        inFlightRef.current = false;
+        return;
+      }
+
+      if (!silent) setLoading(true);
+      if (alive) setError(null);
+      try {
+        const json = (await GetLogs(apiKey)) as unknown as LogsApiResponse;
+        const list = json.data?.result?.[0]?.list ?? [];
+
+        const mapped: LogRow[] = list.map((item) => {
+          const levelRaw = (item.data?.severity_text || '').trim().toUpperCase();
+          const level: LogRow['level'] =
+            levelRaw === 'ERROR' || levelRaw === 'WARN' || levelRaw === 'INFO' || levelRaw === 'DEBUG'
+              ? (levelRaw as LogRow['level'])
+              : 'INFO';
+
+          const serviceName =
+            item.data?.resources_string?.['service.name']?.trim() ||
+            item.data?.serviceName?.trim() ||
+            '';
+
+          return {
+            timestamp: item.timestamp,
+            serviceName,
+            level,
+            body: item.data?.body ?? '',
+          };
+        });
+
+        if (alive) setRows(mapped);
+      } catch (e) {
+        if (alive) {
+          setRows([]);
+          setError(e instanceof Error ? e.message : String(e));
+        }
+      } finally {
+        if (alive) setLoading(false);
+        inFlightRef.current = false;
+      }
+    }
+
+    void load({ silent: false });
+    const id = window.setInterval(() => {
+      void load({ silent: true });
+    }, POLL_INTERVAL_MS);
+
+    return () => {
+      alive = false;
+      inFlightRef.current = false;
+      window.clearInterval(id);
+    };
   }, []);
 
   return (
@@ -64,6 +134,10 @@ export default function Logs() {
             gap: 10,
           }}
         >
+          {rows.length === 0 && !loading && (
+            <div style={{ color: '#5c7080', fontSize: 14, padding: 8 }}>There is no data.</div>
+          )}
+
           {rows.map((row, i) => (
             <Card key={`${row.timestamp}-${i}`} style={{ padding: 12 }}>
               {/* timestamp + service.name */}
@@ -78,7 +152,7 @@ export default function Logs() {
               >
                 <Tag minimal>{row.timestamp}</Tag>
                 <Tag intent="primary" minimal>
-                  {row.serviceName}
+                  {row.serviceName || 'N/A'}
                 </Tag>
                 <Tag intent={levelIntent(row.level)} minimal>
                   {row.level}
@@ -99,6 +173,12 @@ export default function Logs() {
             </Card>
           ))}
         </div>
+
+        {error && (
+          <div style={{ padding: 12, paddingTop: 0, color: '#c23030', fontSize: 12 }}>
+            {error}
+          </div>
+        )}
       </Card>
     </div>
   );
