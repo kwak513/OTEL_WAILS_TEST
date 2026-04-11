@@ -73,7 +73,7 @@ export default function Metrics() {
     const ro = new ResizeObserver(apply);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [rows.length]);
 
   useEffect(() => {
     const t = tableRef.current;
@@ -162,116 +162,107 @@ export default function Metrics() {
       <H3 style={{ marginBottom: '24px' }}>Metrics</H3>
       <Card>
         <div
-          ref={tableWrapRef}
           style={{
-            position: 'relative',
             height: '80vh',
-            width: '100%',
+            overflow: 'auto',
+            padding: 12,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 10,
           }}
         >
-          <Table
-            ref={tableRef}
-            numRows={rows.length}
-            defaultRowHeight={32}
-            enableGhostCells={false}
-            enableRowHeader={false}
-            columnWidths={columnWidths.length === TOTAL_COLUMNS ? columnWidths : undefined}
-          >
-            <Column
-              name=""
-              cellRenderer={(i) => (
-                <Cell
-                  wrapText
-                  truncated={false}
-                  style={{ textAlign: 'right' }}
-                >
-                  {i + 1}
-                </Cell>
-              )}
-            />
-            <Column
-              name="METRIC"
-              cellRenderer={(i) => (
-                <Cell
-                  wrapText
-                  truncated={false}
-                  style={{
-                    textAlign: 'left',
-                    overflowWrap: 'anywhere',
-                    wordBreak: 'break-word',
-                  }}
-                >
-                  {rows[i]?.metric ?? ''}
-                </Cell>
-              )}
-            />
-            <Column
-              name="DESCRIPTION"
-              cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
-                  {rows[i]?.description ?? ''}
-                </Cell>
-              )}
-            />
-            <Column
-              name="TYPE"
-              cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
-                  {rows[i]?.type ?? ''}
-                </Cell>
-              )}
-            />
-            <Column
-              name="SAMPLES"
-              cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
-                  {rows[i]?.samples ?? ''}
-                </Cell>
-              )}
-            />
-            <Column
-              name="TIME SERIES"
-              cellRenderer={(i) => (
-                <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
-                  {rows[i]?.timeSeries ?? ''}
-                </Cell>
-              )}
-            />
-          </Table>
           {rows.length === 0 && !loading && (
-            <div
-              style={{
-                position: 'absolute',
-                inset: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingTop: 36,
-                color: '#5c7080',
-                fontSize: '14px',
-                pointerEvents: 'none',
-              }}
-            >
-              There is no data.
-            </div>
+            <div style={{ color: '#5c7080', fontSize: 14, padding: 8 }}>There is no data.</div>
           )}
 
-          {error && (
+          {rows.length > 0 && (
             <div
+              ref={tableWrapRef}
               style={{
-                position: 'absolute',
-                left: 12,
-                right: 12,
-                bottom: 12,
-                color: '#c23030',
-                fontSize: '12px',
-                pointerEvents: 'none',
+                position: 'relative',
+                flex: 1,
+                minHeight: 0,
+                width: '100%',
               }}
             >
-              {error}
+              <Table
+                ref={tableRef}
+                numRows={rows.length}
+                defaultRowHeight={32}
+                enableGhostCells={false}
+                enableRowHeader={false}
+                columnWidths={columnWidths.length === TOTAL_COLUMNS ? columnWidths : undefined}
+              >
+                <Column
+                  name=""
+                  cellRenderer={(i) => (
+                    <Cell
+                      wrapText
+                      truncated={false}
+                      style={{ textAlign: 'right' }}
+                    >
+                      {i + 1}
+                    </Cell>
+                  )}
+                />
+                <Column
+                  name="METRIC"
+                  cellRenderer={(i) => (
+                    <Cell
+                      wrapText
+                      truncated={false}
+                      style={{
+                        textAlign: 'left',
+                        overflowWrap: 'anywhere',
+                        wordBreak: 'break-word',
+                      }}
+                    >
+                      {rows[i]?.metric ?? ''}
+                    </Cell>
+                  )}
+                />
+                <Column
+                  name="DESCRIPTION"
+                  cellRenderer={(i) => (
+                    <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                      {rows[i]?.description ?? ''}
+                    </Cell>
+                  )}
+                />
+                <Column
+                  name="TYPE"
+                  cellRenderer={(i) => (
+                    <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                      {rows[i]?.type ?? ''}
+                    </Cell>
+                  )}
+                />
+                <Column
+                  name="SAMPLES"
+                  cellRenderer={(i) => (
+                    <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                      {rows[i]?.samples ?? ''}
+                    </Cell>
+                  )}
+                />
+                <Column
+                  name="TIME SERIES"
+                  cellRenderer={(i) => (
+                    <Cell wrapText truncated={false} style={{ textAlign: 'left' }}>
+                      {rows[i]?.timeSeries ?? ''}
+                    </Cell>
+                  )}
+                />
+              </Table>
             </div>
           )}
         </div>
+
+        {error && (
+          <div style={{ padding: 12, paddingTop: 0, color: '#c23030', fontSize: 12 }}>
+            {error}
+          </div>
+        )}
       </Card>
     </div>
   );

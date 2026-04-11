@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -97,7 +98,7 @@ func QueryLogsRange(apiKey string, start int64, end int64, step int, limit int, 
 	// 요청 실행
 	resp, err := client.Client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("요청 실행 실패: %w", err)
+		return nil, errors.New("API 요청에 실패했습니다.")
 	}
 	defer resp.Body.Close()
 

@@ -3,6 +3,7 @@ import { Card, H3, Tag } from '@blueprintjs/core';
 import '@blueprintjs/core/lib/css/blueprint.css';
 
 import { GetLogs } from '../../wailsjs/go/main/App';
+import { formatSigNozTimestamp } from '../formatTimestamp';
 
 const POLL_INTERVAL_MS = 3_000;
 
@@ -88,7 +89,7 @@ export default function Logs() {
             '';
 
           return {
-            timestamp: item.timestamp,
+            timestamp: formatSigNozTimestamp(item.timestamp),
             serviceName,
             level,
             body: item.data?.body ?? '',
