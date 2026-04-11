@@ -1,7 +1,7 @@
 # OpenTelemetry (OTEL) Monitoring System Demo
 
-## Introduction
-이 프로그램은 3가지 주요 pillar인 metrics, traces, logs를 각 탭에서 모니터링하는 앱입니다.
+## 📢 Introduction
+This project is a monitoring application designed to visualize the **three pillars of observability**: Metrics, Traces, and Logs. By integrating with the SigNoz API, this tool provides a centralized dashboard to monitor system health and performance.
 
 ## 👥 Developer
 
@@ -11,8 +11,9 @@
 
 ## 🛠 Tech Stack
 
-- **Frontend**: React, TypeScript  
-- **Backend**: Golang
+- **Frontend**: React, TypeScript, BlueprintJS
+- **Backend**: Golang (Wails Framework)
+- **Data Source**: SigNoz API (OpenTelemetry)
 
 
 ## 📁 Key File Structure
@@ -36,12 +37,66 @@ otel_wails_demo/
 ```
 
 ## 📌 Key Features
-### SigNoz API 연동
-- SigNoz의 metrics, traces, logs 목록 조회 API를 연동합니다.
+### 1. SigNoz API Integration
+- Connects to SigNoz to fetch observability data using a user-provided API key.
 
-### Metrics, Traces, Logs 조회
-- Metrics: metrics명, description, type 등을 테이블 형식으로 표시합니다.
-- Traces: trace명, service name, timestamp, duration 등을 테이블 형식으로 표시합니다. 
-- Logs: service name, timestamp, severity level, body 내용을 표시합니다.
+### 2. Metrics, Traces, and Logs Monitoring
+- Metrics: Displays metric names, descriptions, and types in a table.
+- Traces: Visualizes service names, timestamps, and duration in a table.
+- Logs:  Monitoring with service names, timestamps, severity levels (INFO, ERROR, etc.) and body content
+
 
 ## 🚀 Getting Started (Local Execution)
+Follow these steps to set up the full observability stack, including the Spring Boot instrumentation and the SigNoz backend.
+
+### 1. Spring Boot Application Setup
+To collect data, you must attach the OpenTelemetry Javaagent to your target Spring Boot application.
+
+1. Download the Javaagent
+- Download opentelemetry-javaagent.jar from the [Official OpenTelemetry Repo](https://github.com/open-telemetry/opentelemetry-java-instrumentation?tab=readme-ov-file#getting-started).
+- Place the .jar file in your Spring Boot project's root directory.
+
+2. Configure VM Options
+- In your IDE (e.g., IntelliJ), add the following to your Edit Configurations > VM Options
+
+```
+-javaagent:opentelemetry-javaagent.jar
+-Dotel.exporter.otlp.endpoint=http://localhost:4317
+-Dotel.exporter.otlp.protocol=grpc
+-Dotel.resource.attributes=service.name=demo-for-signoz1  # Set your service name
+-Dotel.logs.exporter=otlp
+```
+
+### 2. Run SigNoz via Docker
+SigNoz acts as the backend to store and process your OTel data.
+
+1. Start Docker Desktop
+2. Clone and Launch SigNoz:
+
+```
+# Clone the repository
+git clone -b main https://github.com/SigNoz/signoz.git
+cd signoz/deploy/docker
+
+# Start SigNoz containers
+docker-compose up -d --remove-orphans
+```
+The SigNoz dashboard will be available at http://localhost:8080.
+
+### 3. Run OTEL_WAILS_DEMO
+Once your Spring Boot app and SigNoz are running, launch this dashboard.
+
+1. Clone and Run
+
+```
+# Clone this repository
+git clone https://github.com/kwak513/OTEL_WAILS_DEMO.git
+cd OTEL_WAILS_DEMO
+
+# Run in development mode
+wails dev
+```
+
+2. Connect
+- Copy your SigNoz API Key from [SigNoz API Key Setting Page](http://localhost:8080/settings/api-keys).
+- Paste it into the API Key tab of this app to start monitoring.

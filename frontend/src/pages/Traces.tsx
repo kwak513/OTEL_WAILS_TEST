@@ -5,6 +5,7 @@ import { Cell, Column, Table } from '@blueprintjs/table';
 import '@blueprintjs/table/lib/css/table.css';
 
 import { GetTraces } from '../../wailsjs/go/main/App';
+import { formatSigNozTimestamp } from '../formatTimestamp';
 
 const DATA_COLUMNS = 6;
 const INDEX_COLUMN_WIDTH = 60;
@@ -145,7 +146,7 @@ export default function Traces() {
         const json = (await GetTraces(apiKey)) as unknown as TracesApiResponse;
         const list = json.data?.result?.[0]?.list ?? [];
         const mapped: TracesTableRow[] = list.map((item) => ({
-          timestamp: item.timestamp,
+          timestamp: formatSigNozTimestamp(item.timestamp),
           serviceName: item.data?.serviceName ?? '',
           name: item.data?.name ?? '',
           durationNano: Number(item.data?.durationNano ?? 0),
