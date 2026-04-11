@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -100,7 +101,7 @@ func QueryTracesRange(apiKey string, start, end int64, step int, limit int, orde
 	// 요청 실행
 	resp, err := client.Client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("요청 실행 실패: %w", err)
+		return nil, errors.New("API 요청에 실패했습니다.")
 	}
 	defer resp.Body.Close()
 
@@ -143,7 +144,7 @@ func GetTraceDetail(traceId string) (*models.TraceDetailResponse, error) {
 	// 요청 실행
 	resp, err := client.Client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("요청 실행 실패: %w", err)
+		return nil, errors.New("API 요청에 실패했습니다.")
 	}
 	defer resp.Body.Close()
 
@@ -203,7 +204,7 @@ func GetTraceWaterfall(traceId string, selectedSpanId *string, uncollapsedSpans 
 	// 요청 실행
 	resp, err := client.Client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("요청 실행 실패: %w", err)
+		return nil, errors.New("API 요청에 실패했습니다.")
 	}
 	defer resp.Body.Close()
 

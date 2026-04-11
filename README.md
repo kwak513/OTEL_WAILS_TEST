@@ -1,19 +1,47 @@
-# README
+# OpenTelemetry (OTEL) Monitoring System Demo
 
-## About
+## Introduction
+이 프로그램은 3가지 주요 pillar인 metrics, traces, logs를 각 탭에서 모니터링하는 앱입니다.
 
-This is the official Wails React-TS template.
+## 👥 Developer
 
-You can configure the project by editing `wails.json`. More information about the project settings can be found
-here: https://wails.io/docs/reference/project-config
+| Name   | Role         |
+|--------|--------------|
+| Chaeyeon Kwak | Full-stack development |
 
-## Live Development
+## 🛠 Tech Stack
 
-To run in live development mode, run `wails dev` in the project directory. This will run a Vite development
-server that will provide very fast hot reload of your frontend changes. If you want to develop in a browser
-and have access to your Go methods, there is also a dev server that runs on http://localhost:34115. Connect
-to this in your browser, and you can call your Go code from devtools.
+- **Frontend**: React, TypeScript  
+- **Backend**: Golang
 
-## Building
 
-To build a redistributable, production mode package, use `wails build`.
+## 📁 Key File Structure
+```
+otel_wails_demo/
+├── main.go
+├── app.go
+├── wails.json
+│
+├── backend/
+│ ├── api/     
+│ └── models/ 
+│
+└── frontend/
+    ├── src/
+    │ ├── layout/
+    │ ├── pages/
+    │ ├── App.tsx
+    │ └── main.tsx
+    └── index.html
+```
+
+## 📌 Key Features
+### SigNoz API 연동
+- SigNoz의 metrics, traces, logs 목록 조회 API를 연동합니다.
+
+### Metrics, Traces, Logs 조회
+- Metrics: metrics명, description, type 등을 테이블 형식으로 표시합니다.
+- Traces: trace명, service name, timestamp, duration 등을 테이블 형식으로 표시합니다. 
+- Logs: service name, timestamp, severity level, body 내용을 표시합니다.
+
+## 🚀 Getting Started (Local Execution)
