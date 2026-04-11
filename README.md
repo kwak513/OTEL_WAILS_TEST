@@ -1,4 +1,4 @@
-# OpenTelemetry (OTEL) Monitoring System Demo
+![Adobe Express - logs](https://github.com/user-attachments/assets/85910e0f-8170-448f-96b4-a82ca5b95b6d)# OpenTelemetry (OTEL) Monitoring System Demo
 
 ## 📢 Introduction
 This project is a monitoring application designed to visualize the **three pillars of observability**: Metrics, Traces, and Logs. By integrating with the SigNoz API, this tool provides a centralized dashboard to monitor system health and performance.
@@ -42,8 +42,13 @@ otel_wails_demo/
 
 ### 2. Metrics, Traces, and Logs Monitoring
 - Metrics: Displays metric names, descriptions, and types in a table.
+  ![Adobe Express - Adobe Express - metrics](https://github.com/user-attachments/assets/fc2557c3-e1a1-4528-aa2f-2e74bad98944)
+
 - Traces: Visualizes service names, timestamps, and duration in a table.
+  ![Adobe Express - traces](https://github.com/user-attachments/assets/45447a85-dd40-4772-a274-ced84b7d103f)
+
 - Logs:  Monitoring with service names, timestamps, severity levels (INFO, ERROR, etc.) and body content
+  ![Adobe Express - logs](https://github.com/user-attachments/assets/81883708-2ab2-4aaf-8297-c19811df7619)
 
 
 ## 🚀 Getting Started (Local Execution)
